@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      METROLIST_APPLICATION_ID: com.metrolist.music
+      METROLIST_APPLICATION_ID: com.alyson2904.mexamusic
       METROLIST_APP_NAME: MexaMusic
 
     steps:
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      METROLIST_APPLICATION_ID: com.metrolist.music
+      METROLIST_APPLICATION_ID: com.alyson2904.mexamusic
       METROLIST_APP_NAME: MexaMusic
 
     steps:
