@@ -1,3 +1,4 @@
+
 /**
  * Metrolist Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
@@ -60,7 +61,6 @@ import com.metrolist.music.ui.screens.settings.integrations.DiscordSettings
 import com.metrolist.music.ui.screens.settings.integrations.IntegrationScreen
 import com.metrolist.music.ui.screens.settings.integrations.LastFMSettings
 import com.metrolist.music.ui.screens.settings.integrations.ListenTogetherSettings
-
 import com.metrolist.music.ui.screens.wrapped.WrappedScreen
 import com.metrolist.music.utils.rememberEnumPreference
 import com.metrolist.music.utils.rememberPreference
@@ -79,16 +79,26 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable(Screens.Search.route) { backStackEntry ->
         val pureBlackEnabled by rememberPreference(PureBlackKey, defaultValue = false)
-        val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
-        val isSystemInDarkTheme = isSystemInDarkTheme()
+        val darkTheme by rememberEnumPreference(
+            DarkModeKey,
+            defaultValue = DarkMode.AUTO
+        )
+        val systemInDarkTheme = isSystemInDarkTheme()
+
         val useDarkTheme =
-            remember(darkTheme, isSystemInDarkTheme) {
-                if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
+            remember(darkTheme, systemInDarkTheme) {
+                if (darkTheme == DarkMode.AUTO) {
+                    systemInDarkTheme
+                } else {
+                    darkTheme == DarkMode.ON
+                }
             }
+
         val pureBlack =
             remember(pureBlackEnabled, useDarkTheme) {
                 pureBlackEnabled && useDarkTheme
             }
+
         SearchScreen(
             pureBlack = pureBlack,
             savedStateHandle = backStackEntry.savedStateHandle
@@ -103,9 +113,7 @@ fun NavGraphBuilder.navigationBuilder(
         ListenTogetherScreen(navController, showTopBar = false)
     }
 
-    composable(
-        route = "listen_together_from_topbar",
-    ) {
+    composable("listen_together_from_topbar") {
         ListenTogetherScreen(navController, showTopBar = true)
     }
 
@@ -125,6 +133,15 @@ fun NavGraphBuilder.navigationBuilder(
         AccountScreen(navController)
     }
 
+    // MexaMusic: pantalla independiente de DJ MIX
+    composable("dj_mix") {
+        DJMixScreen(
+            onBack = {
+                navController.popBackStack()
+            }
+        )
+    }
+
     composable("new_release") {
         NewReleaseScreen(navController)
     }
@@ -135,12 +152,11 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable(
         route = "browse/{browseId}",
-        arguments =
-            listOf(
-                navArgument("browseId") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("browseId") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         BrowseScreen(
             navController,
@@ -150,12 +166,11 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable(
         route = "search/{query}",
-        arguments =
-            listOf(
-                navArgument("query") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("query") {
+                type = NavType.StringType
+            }
+        ),
         enterTransition = {
             fadeIn(tween(250))
         },
@@ -180,166 +195,153 @@ fun NavGraphBuilder.navigationBuilder(
         OnlineSearchResult(
             savedStateHandle = backStackEntry.savedStateHandle
         )
-
     }
 
     composable(
         route = "album/{albumId}",
-        arguments =
-            listOf(
-                navArgument("albumId") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("albumId") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         AlbumScreen(navController)
     }
 
     composable(
         route = "artist/{artistId}?isPodcastChannel={isPodcastChannel}",
-        arguments =
-            listOf(
-                navArgument("artistId") {
-                    type = NavType.StringType
-                },
-                navArgument("isPodcastChannel") {
-                    type = NavType.BoolType
-                    defaultValue = false
-                },
-            ),
+        arguments = listOf(
+            navArgument("artistId") {
+                type = NavType.StringType
+            },
+            navArgument("isPodcastChannel") {
+                type = NavType.BoolType
+                defaultValue = false
+            }
+        ),
     ) {
         ArtistScreen(navController)
     }
 
     composable(
         route = "artist/{artistId}/songs",
-        arguments =
-            listOf(
-                navArgument("artistId") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("artistId") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         ArtistSongsScreen(navController)
     }
 
     composable(
         route = "artist/{artistId}/albums",
-        arguments =
-            listOf(
-                navArgument("artistId") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("artistId") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         ArtistAlbumsScreen(navController, scrollBehavior)
     }
 
     composable(
         route = "artist/{artistId}/items?browseId={browseId}?params={params}",
-        arguments =
-            listOf(
-                navArgument("artistId") {
-                    type = NavType.StringType
-                },
-                navArgument("browseId") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument("params") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ),
+        arguments = listOf(
+            navArgument("artistId") {
+                type = NavType.StringType
+            },
+            navArgument("browseId") {
+                type = NavType.StringType
+                nullable = true
+            },
+            navArgument("params") {
+                type = NavType.StringType
+                nullable = true
+            }
+        ),
     ) {
         ArtistItemsScreen(navController)
     }
 
     composable(
         route = "online_playlist/{playlistId}",
-        arguments =
-            listOf(
-                navArgument("playlistId") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("playlistId") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         OnlinePlaylistScreen(navController)
     }
 
     composable(
         route = "online_podcast/{podcastId}",
-        arguments =
-            listOf(
-                navArgument("podcastId") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("podcastId") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         OnlinePodcastScreen(navController, scrollBehavior)
     }
 
     composable(
         route = "local_playlist/{playlistId}",
-        arguments =
-            listOf(
-                navArgument("playlistId") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("playlistId") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         LocalPlaylistScreen(navController)
     }
 
     composable(
         route = "auto_playlist/{playlist}",
-        arguments =
-            listOf(
-                navArgument("playlist") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("playlist") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         AutoPlaylistScreen(navController)
     }
 
     composable(
         route = "cache_playlist/{playlist}",
-        arguments =
-            listOf(
-                navArgument("playlist") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("playlist") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         CachePlaylistScreen(navController)
     }
 
     composable(
         route = "top_playlist/{top}",
-        arguments =
-            listOf(
-                navArgument("top") {
-                    type = NavType.StringType
-                },
-            ),
+        arguments = listOf(
+            navArgument("top") {
+                type = NavType.StringType
+            }
+        ),
     ) {
         TopPlaylistScreen(navController)
     }
 
     composable(
         route = "youtube_browse/{browseId}?params={params}",
-        arguments =
-            listOf(
-                navArgument("browseId") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument("params") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ),
+        arguments = listOf(
+            navArgument("browseId") {
+                type = NavType.StringType
+                nullable = true
+            },
+            navArgument("params") {
+                type = NavType.StringType
+                nullable = true
+            }
+        ),
     ) {
         YouTubeBrowseScreen(navController)
     }
@@ -396,7 +398,7 @@ fun NavGraphBuilder.navigationBuilder(
         LastFMSettings(navController)
     }
 
-    composable(route = "settings/integrations/listen_together") {
+    composable("settings/integrations/listen_together") {
         ListenTogetherSettings(navController)
     }
 
@@ -428,27 +430,32 @@ fun NavGraphBuilder.navigationBuilder(
     }
 
     composable("eq_wizard") {
-        WizardScreen(onNavigateBack = {
-            navController.popBackStack()
-        })
+        WizardScreen(
+            onNavigateBack = {
+                navController.popBackStack()
+            }
+        )
     }
 
     composable(
         route = "recognition?autoStart={autoStart}",
-        arguments =
-            listOf(
-                navArgument("autoStart") {
-                    type = NavType.BoolType
-                    defaultValue = false
-                },
-            ),
+        arguments = listOf(
+            navArgument("autoStart") {
+                type = NavType.BoolType
+                defaultValue = false
+            }
+        ),
     ) {
-        RecognitionScreen(navController, it.arguments?.getBoolean("autoStart") ?: false)
+        RecognitionScreen(
+            navController,
+            it.arguments?.getBoolean("autoStart") ?: false
+        )
     }
 
     composable("recognition_history") {
         RecognitionHistoryScreen(navController)
     }
+
     composable("settings/android_auto") {
         AndroidAutoSettings(navController)
     }
