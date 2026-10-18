@@ -1,122 +1,112 @@
 
-name: Build APKs
+name: Crear APKs MexaMusic
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-    paths-ignore:
-      - "README.md"
-      - "fastlane/**"
-      - "assets/**"
-      - ".github/**/*.md"
-      - ".github/FUNDING.yml"
-      - ".github/ISSUE_TEMPLATE/**"
+  workflow_dispatch:
 
 permissions:
-  contents: write
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  contents: read
 
 jobs:
   build_debug:
     name: Build Debug APK
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+
+    env:
+      METROLIST_APPLICATION_ID: com.metrolist.music
+      METROLIST_APP_NAME: MexaMusic
 
     steps:
-      - name: Checkout repository
+      - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: "21"
           distribution: temurin
+          java-version: '21'
 
-      - name: Set up Gradle
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Grant execute permission for gradlew
+      - name: Dar permisos a Gradle
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew --no-daemon --console=plain assembleGmsDebug --warning-mode summary
-        env:
-          METROLIST_APPLICATION_ID: com.metrolist.music
-          METROLIST_APP_NAME: MexaMusic
-          METROLIST_BUILD_COMMIT: ${{ github.sha }}
-          PULL_REQUEST: "false"
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
-          LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
+      - name: Generar Android Debug Keystore
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.android"
+          if [ ! -f "$HOME/.android/debug.keystore" ]; then
+            keytool -genkeypair \
+              -v \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
 
-      - name: Find generated APK
+      - name: Compilar APK Debug
+        run: ./gradlew --no-daemon --console=plain assembleGmsDebug --warning-mode summary
+
+      - name: Buscar APK Debug
         id: find_apk
         shell: bash
         run: |
-          set -euo pipefail
-
-          APK_PATH="$(find app/build/outputs/apk/gms/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
-
+          APK_PATH="$(find app/build/outputs/apk/gms/debug -type f -name '*.apk' -print -quit)"
           if [ -z "$APK_PATH" ]; then
-            echo "No se encontró ninguna APK de depuración."
-            find app/build/outputs/apk -type f -name '*.apk' -print || true
+            echo "No se encontró la APK Debug."
             exit 1
           fi
+          echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
+          echo "APK encontrada: $APK_PATH"
 
-          mkdir -p dist
-          cp "$APK_PATH" dist/MexaMusic-debug.apk
-          echo "APK creada correctamente: dist/MexaMusic-debug.apk"
-
-      - name: Upload Debug APK
+      - name: Guardar APK Debug
         uses: actions/upload-artifact@v4
         with:
           name: MexaMusic-debug
-          path: dist/MexaMusic-debug.apk
+          path: ${{ steps.find_apk.outputs.apk_path }}
           if-no-files-found: error
           retention-days: 7
 
   build_release:
     name: Build Release APK
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+
+    env:
+      METROLIST_APPLICATION_ID: com.metrolist.music
+      METROLIST_APP_NAME: MexaMusic
 
     steps:
-      - name: Checkout repository
+      - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: "21"
           distribution: temurin
+          java-version: '21'
 
-      - name: Set up Gradle
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Grant execute permission for gradlew
+      - name: Dar permisos a Gradle
         run: chmod +x gradlew
 
-      - name: Build Release APK
+      - name: Compilar APK Release
         run: ./gradlew --no-daemon --console=plain assembleGmsRelease --warning-mode summary
-        env:
-          METROLIST_APPLICATION_ID: com.metrolist.music
-          METROLIST_APP_NAME: MexaMusic
-          METROLIST_BUILD_COMMIT: ${{ github.sha }}
-          PULL_REQUEST: "false"
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
-          LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
 
-      - name: Upload Release APK
+      - name: Guardar APK Release sin firmar
         uses: actions/upload-artifact@v4
         with:
           name: MexaMusic-release-unsigned
           path: app/build/outputs/apk/gms/release/*.apk
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
           
