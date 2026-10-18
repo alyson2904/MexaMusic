@@ -969,6 +969,27 @@ fun SongMenu(
             Material3MenuGroup(
                 items =
                     buildList {
+                        // MexaMusic: abrir la canción seleccionada en DJ MIX.
+                        add(
+                            Material3MenuItemData(
+                                title = { Text("DJ MIX") },
+                                description = { Text("Abrir mezclador DJ") },
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.queue_music),
+                                        contentDescription = null,
+                                    )
+                                },
+                                onClick = {
+                                    navController.currentBackStackEntry
+                                        ?.savedStateHandle
+                                        ?.set("dj_mix_song_id", song.id)
+                                    onDismiss()
+                                    navController.navigate("dj_mix")
+                                },
+                            ),
+                        )
+
                         // Don't show "View Artist" for podcast episodes
                         if (!song.song.isEpisode) {
                             add(
