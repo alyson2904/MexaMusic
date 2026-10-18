@@ -135,11 +135,16 @@ fun NavGraphBuilder.navigationBuilder(
 
     // MexaMusic: pantalla independiente de DJ MIX
     composable("dj_mix") {
-        DJMixScreen(
-            onBack = {
-                navController.popBackStack()
-            }
-        )
+    val selectedSongId = navController.previousBackStackEntry
+        ?.savedStateHandle
+        ?.get<String>("dj_mix_song_id")
+
+    DJMixScreen(
+        selectedSongId = selectedSongId,
+        onBack = {
+            navController.popBackStack()
+        }
+    )
     }
 
     composable("new_release") {
