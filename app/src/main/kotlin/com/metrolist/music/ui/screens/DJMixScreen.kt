@@ -39,6 +39,7 @@ private val MixAccent = Color(0xFF35E0B1)
 
 @Composable
 fun DJMixScreen(
+    selectedSongId: String? = null,
     onBack: () -> Unit = {},
 ) {
     var crossfader by remember { mutableFloatStateOf(0.5f) }
