@@ -32,6 +32,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrolist.music.LocalDatabase
+import com.metrolist.music.db.entities.Song
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.flowOf
 
 private val MixBackground = Color(0xFF101114)
 private val MixCard = Color(0xFF202228)
@@ -42,6 +46,22 @@ fun DJMixScreen(
     selectedSongId: String? = null,
     onBack: () -> Unit = {},
 ) {
+    // Obtener la canción seleccionada para Deck A
+    val database = LocalDatabase.current
+
+    val selectedSongFlow = remember(database, selectedSongId) {
+        if (selectedSongId != null) {
+            database.song(selectedSongId)
+        } else {
+            flowOf<Song?>(null)
+        }
+    }
+
+    val selectedSong by selectedSongFlow.collectAsStateWithLifecycle(
+        initialValue = null
+    )
+
+    val deckATrackName = selectedSong?.title ?: "Pista A"
     var crossfader by remember { mutableFloatStateOf(0.5f) }
     var volumeA by remember { mutableFloatStateOf(0.8f) }
     var volumeB by remember { mutableFloatStateOf(0.8f) }
@@ -93,10 +113,10 @@ fun DJMixScreen(
             DeckCard(
                 modifier = Modifier.weight(1f),
                 deckName = "DECK A",
-                trackName = "Pista A",
+                trackName = deckATrackName,
                 volume = volumeA,
                 onVolumeChange = { volumeA = it }
-            )
+           )
             DeckCard(
                 modifier = Modifier.weight(1f),
                 deckName = "DECK B",
