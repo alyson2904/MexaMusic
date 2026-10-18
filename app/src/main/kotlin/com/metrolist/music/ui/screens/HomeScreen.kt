@@ -1199,6 +1199,21 @@ fun HomeScreen(
                     )
                 }
 
+                
+                item(key = "dj_mix_entry") {
+                    Button(
+                        onClick = {
+                            navController.navigate("dj_mix")
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text("DJ MIX · Abrir mezclador")
+                    }
+                }
+                
+
                 if (isLoading && homePage?.chips.isNullOrEmpty()) {
                     item(key = "chips_shimmer") {
                         ShimmerHost(showGradient = false) {
